@@ -7,7 +7,6 @@
 #include <mutex>
 #include <future>
 #include <condition_variable>
-#include <type_traits>
 #include <vector>
 using namespace std::chrono_literals;
 

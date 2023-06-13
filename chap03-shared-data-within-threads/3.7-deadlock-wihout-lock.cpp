@@ -3,7 +3,6 @@
 
 using namespace std;
 
-void foo();
 void bar();
 
 void foo() {
@@ -18,7 +17,7 @@ void bar() {
 }
 
 int main() {
-    foo();
     bar();
+    foo();
     return 0;
 }

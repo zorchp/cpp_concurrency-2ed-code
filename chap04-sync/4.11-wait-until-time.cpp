@@ -18,7 +18,7 @@ bool wait_loop() {
     return done;
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
     assert(wait_loop());
     return 0;
 }

@@ -1,7 +1,6 @@
 #include <thread>
 #include <mutex>
 
-
 // 这里的std::lock()需要包含<mutex>头文件
 class some_big_object {};
 
