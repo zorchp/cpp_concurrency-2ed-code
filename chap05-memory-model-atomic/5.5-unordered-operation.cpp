@@ -1,6 +1,7 @@
 #include <cassert>
 #include <atomic>
 #include <thread>
+#include <iostream>
 
 std::atomic<bool> x, y;
 std::atomic<int> z;
@@ -26,5 +27,6 @@ int main(int argc, char *argv[]) {
     a.join();
     b.join();
     assert(z.load() != 0);
+    std::cout << z.load();
     return 0;
 }

@@ -18,22 +18,25 @@ private:
     node* tail;
 
 public:
-    queue() : head(new node), tail(head.get()) {}
+    queue() : head(new node), tail(head.get()) {
+    }
     queue(const queue& rhs) = delete;
     queue& operator=(const queue& rhs) = delete;
 
     shared_ptr<T> try_pop() {
-        if (head.get() == tail) return shared_ptr<T>();
+        if (head.get() == tail)
+            return shared_ptr<T>();
 
         shared_ptr<T> const ans(head->data);
         unique_ptr<node> const old_head = std::move(head);
         head = std::move(old_head->next);
-        if (!head) tail = nullptr;
+        if (!head)
+            tail = nullptr;
         return ans;
     }
 
     void push(T new_val) {
-        shared_ptr<T> new_data(make_shared<T>(std::move(new_val)));
+        auto new_data(make_shared<T>(std::move(new_val)));
         unique_ptr<node> p(new node);
         tail->data = new_data;
         node* const new_tail = p.get();

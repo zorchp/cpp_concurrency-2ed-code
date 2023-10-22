@@ -60,7 +60,7 @@ void t1() {
     auto v = get_vec();
     auto start = system_clock::now();
     // int ans = parallel_accumulate(v.begin(), v.end(), 0);
-    int ans = accumulate(v.begin(), v.end(), 0);
+    int ans = accumulate(v.begin(), v.end(), 0ll);
     auto end = system_clock::now();
     auto duration = duration_cast<microseconds>(end - start);
     cout << "Time spent: "

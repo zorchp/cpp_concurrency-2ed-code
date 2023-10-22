@@ -1,4 +1,3 @@
-#include <cstddef>
 #include <iostream>
 #include <future>
 #include <condition_variable>
@@ -27,7 +26,8 @@ private:
 
     unique_ptr<node> pop_head() {
         lock_guard<mutex> head_lock(head_mutex);
-        if (head.get() == get_tail()) return nullptr;
+        if (head.get() == get_tail())
+            return nullptr;
 
         unique_ptr<node> old_head = std::move(head);
         head = std::move(old_head->next);
@@ -35,7 +35,8 @@ private:
     }
 
 public:
-    threadsafe_queue() : head(new node), tail(head.get()) {}
+    threadsafe_queue() : head(new node), tail(head.get()) {
+    }
     threadsafe_queue(const threadsafe_queue& rhs) = delete;
     threadsafe_queue& operator=(const threadsafe_queue& rhs) = delete;
 

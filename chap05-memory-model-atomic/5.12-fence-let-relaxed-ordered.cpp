@@ -1,5 +1,6 @@
 #include <atomic>
 #include <cassert>
+#include <iostream>
 #include <thread>
 #include <vector>
 using namespace std::chrono_literals;
@@ -35,5 +36,6 @@ int main(int argc, char *argv[]) {
     a.join();
     b.join();
     assert(z.load() != 0);
+    std::cout << z.load();
     return 0;
 }

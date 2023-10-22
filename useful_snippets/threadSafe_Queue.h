@@ -1,10 +1,13 @@
+#ifndef THREADSAFE_QUEUE_H
+#define THREADSAFE_QUEUE_H
+
 #include <mutex>
 #include <condition_variable>
 #include <memory> // std::move
 
 
 template <typename T>
-class threadsafe_queue {
+class queue_ts {
 private:
     struct node {
         std::shared_ptr<T> data;
@@ -57,9 +60,9 @@ private:
     }
 
 public:
-    threadsafe_queue() : head(new node), tail(head.get()) {}
-    threadsafe_queue(const threadsafe_queue& rhs) = delete;
-    threadsafe_queue& operator=(const threadsafe_queue& rhs) = delete;
+    queue_ts() : head(new node), tail(head.get()) {}
+    queue_ts(const queue_ts& rhs) = delete;
+    queue_ts& operator=(const queue_ts& rhs) = delete;
 
     std::shared_ptr<T> try_pop() {
         std::unique_ptr<node> old_head = pop_head();
@@ -77,7 +80,7 @@ public:
         std::unique_ptr<node> const old_head = wait_pop_head(val);
     }
     void push(T new_val) {
-        auto new_data(make_shared<T>(std::move(new_val)));
+        auto new_data(std::make_shared<T>(std::move(new_val)));
         std::unique_ptr<node> p(new node);
         { // RAII
             std::lock_guard<std::mutex> tail_lock(tail_mutex);
@@ -93,3 +96,5 @@ public:
         return head.get() == get_tail();
     }
 };
+
+#endif // !THREADSAFE_QUEUE_H

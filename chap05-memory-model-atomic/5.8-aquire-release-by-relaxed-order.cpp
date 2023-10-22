@@ -1,6 +1,7 @@
 #include <atomic>
 #include <thread>
 #include <cassert>
+#include <iostream>
 
 using namespace std;
 
@@ -35,5 +36,6 @@ int main(int argc, char *argv[]) {
     thread d(read_y_then_x);
     a.join(), b.join(), c.join(), d.join();
     assert(z.load() != 0);
+    cout << z.load();
     return 0;
 }
