@@ -3,18 +3,20 @@
 #include <thread>
 #include <mutex>
 #include <format>
+#include <sstream>
 #include <condition_variable>
 
-constexpr int BUF_SIZE = 10;
-constexpr int MAX_NUM = 15; // number of goods
+constexpr int BUF_SIZE = 3;
+constexpr int MAX_NUM = 50; // number of goods
 
-// 目前仅支持单一生产者和单一消费者
-// 如果使用多个会导致这多个生产者(消费者)之间出现数据竞争, 导致线程空转
-constexpr int PRODUCER_NUM = 1;
-constexpr int CONSUMER_NUM = 1;
+constexpr int PRODUCER_NUM = 5;
+constexpr int CONSUMER_NUM = 4;
 
 // thread sync tool
 std::mutex mtx;
+// mutex to protect cnt
+std::mutex mtx_consumer;
+std::mutex mtx_producer;
 std::condition_variable cv_not_full; // buf 不满, 生产者等待此条件成立
 std::condition_variable cv_not_empty; // buf 不空, 消费者等待此条件成立
 
@@ -26,17 +28,15 @@ static size_t read_pos = 0;
 static size_t write_pos = 0;
 [[maybe_unused]] static size_t cnt = 0;
 
+static size_t producer_cnt = 0;
+static size_t consumer_cnt = 0;
+
 void produce_one(int i) { // Product one , idx = i
     std::unique_lock lk(mtx);
-    // while ((write_pos + 1) % BUF_SIZE == read_pos) {
-    //     std::cout << "producer is waiting for an unfilled buf\n";
-    //     cv_not_full.wait(lk);
-    // }
 
     // equals to
     cv_not_full.wait(lk, [] {
         std::cout << "check buf is not full\n";
-        // return (write_pos + 1) % BUF_SIZE != read_pos;
         return cnt != MAX_NUM;
     });
 
@@ -49,14 +49,9 @@ void produce_one(int i) { // Product one , idx = i
 
 int consume_one() {
     std::unique_lock lk(mtx);
-    // while (write_pos == read_pos) {
-    //     std::cout << "consumer is waiting for items\n";
-    //     cv_not_empty.wait(lk);
-    // }
 
     cv_not_empty.wait(lk, [] {
         std::cout << "check buf is not empty\n";
-        // return write_pos != read_pos;
         return cnt != 0;
     });
     auto data = buf[read_pos];
@@ -66,19 +61,31 @@ int consume_one() {
     return data;
 }
 
-void producer() {
-    for (int i{}; i < MAX_NUM; ++i) {
-        std::cout << std::format("生产第 {} 个\n", i);
-        produce_one(i);
+void producer(int idx) {
+    bool flg{};
+    int i{};
+    while (!flg) {
+        std::lock_guard lk(mtx_producer);
+        if (producer_cnt < MAX_NUM) {
+            ++producer_cnt;
+            std::cout << std::format("#{} 生产第 {} 个\n", idx, i);
+            produce_one(i);
+            ++i;
+        } else {
+            flg = true;
+        }
     }
 }
 
-void consumer() {
-    int i{};
-    for (;;) {
-        std::cout << std::format("消费第 {} 个\n", consume_one());
-        if (++i == MAX_NUM) {
-            break;
+void consumer(int idx) {
+    bool flg{};
+    while (!flg) {
+        std::lock_guard lk(mtx_consumer);
+        if (consumer_cnt < MAX_NUM) {
+            ++consumer_cnt;
+            std::cout << std::format("${} 消费第 {} 个\n", idx, consume_one());
+        } else {
+            flg = true;
         }
     }
 }
@@ -86,10 +93,10 @@ void consumer() {
 int main(int argc, char *argv[]) {
     std::vector<std::thread> vp, vc;
     for (int i{}; i < PRODUCER_NUM; ++i) {
-        vp.emplace_back(producer);
+        vp.emplace_back(producer, i);
     }
     for (int i{}; i < CONSUMER_NUM; ++i) {
-        vc.emplace_back(consumer);
+        vc.emplace_back(consumer, i);
     }
     for (auto &p : vp) {
         p.join();

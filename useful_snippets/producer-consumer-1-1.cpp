@@ -76,12 +76,8 @@ void producer() {
 }
 
 void consumer() {
-    int i{};
-    for (;;) {
+    for (int i{}; i < MAX_NUM; ++i) {
         std::cout << std::format("消费第 {} 个\n", consume_one());
-        if (++i == MAX_NUM) {
-            break;
-        }
     }
 }
 
